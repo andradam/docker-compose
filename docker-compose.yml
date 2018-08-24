@@ -1,0 +1,43 @@
+version: '2'
+
+services:
+  bg:
+    image: xtremgforce/blue-green
+    container_name: bg
+    ports:
+      - "80:80"
+      - "8080:8080"
+    environment:
+      - constraint:node==master
+      - CONSUL_URL=${KV_IP}:8500
+      - BLUE_NAME=blue
+      - GREEN_NAME=green
+      - LIVE=blue
+    depends_on:
+      - green
+      - blue
+    networks:
+      - blue-green
+
+  blue:
+    image: xtremgforce/nginx-html:1
+    ports:
+      - "80"
+    environment:
+      - SERVICE_80_NAME=blue
+    networks:
+      - blue-green
+
+  green:
+    image: xtremgforce/nginx-html:2
+    ports:
+      - "80"
+    environment:
+      - SERVICE_80_NAME=green
+    networks:
+      - blue-green
+
+networks:
+  blue-green:
+    driver: overlay
+
